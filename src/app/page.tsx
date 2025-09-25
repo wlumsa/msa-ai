@@ -5,19 +5,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useRef, useState } from "react";
 export default function Home() {
-  const [answers, setAnswers] = useState<string[]>([]);
+  const [answers, setAnswers] = useState("");
+  const [msg, setMsg] = useState("");
   const answersRef = useRef<HTMLDivElement>(null);
 
-  const handleGenerate = () => {
- 
-    setAnswers([
-      "This is a sample generated answer for your activity form.",
-      "You can replace this with actual AI-generated content.",
-    ]);
+  async function handleGenerate() {
+    // call to the api
+    const response = await fetch("/api/generate", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        messages: [{
+          "role": "user",
+          "content": msg
+        }]
+      })
+    });
+    const data = await response.text();
+    setAnswers(data);
     setTimeout(() => {
       answersRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, 100);
-  };
+  }
   
   return (
     <div className="font-sans flex flex-col items-center min-h-screen p-8 pb-20 sm:p-20 bg-gradient-to-br from-slate-50 to-slate-200 dark:from-neutral-900 dark:to-neutral-800">
@@ -45,7 +56,7 @@ export default function Home() {
           <h2 className="text-2xl font-bold mb-4 text-primary">Activity Forms</h2>
           <div>
             <h3 className="text-lg font-semibold mb-2">Event title and brief description</h3>
-            <Input className="flex-1 focus:ring-2 focus:ring-primary/60 transition" placeholder="Type your question..." />
+            <Input className="flex-1 focus:ring-2 focus:ring-primary/60 transition" placeholder="Type your question..."  onChange={(e) => setMsg(e.target.value)}value={msg} />
             <p className="font-bold py-4">Activity form question list:</p>
             <ul className="flex flex-col gap-4 pl-4 list-none">
               <li className="flex items-start gap-2">
@@ -83,11 +94,12 @@ export default function Home() {
       {answers.length > 0 && (
         <div ref={answersRef} className="mt-12 bg-primary/5 dark:bg-primary/10 rounded-xl p-8 border border-primary/20 shadow-md w-full max-w-3xl">
           <h2 className="text-xl font-bold text-primary mb-4">Generated Answers</h2>
-          <ul className="list-disc pl-6 space-y-2">
+          <p>{answers}</p>
+          {/* <ul className="list-disc pl-6 space-y-2">
             {answers.map((ans, idx) => (
               <li key={idx} className="text-base text-foreground/90">{ans}</li>
             ))}
-          </ul>
+          </ul> */}
         </div>
       )}
     </div>
